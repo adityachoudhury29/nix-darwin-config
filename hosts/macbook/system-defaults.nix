@@ -10,7 +10,8 @@
 {
   system.defaults = {
     # --- Dock ---
-    dock.autohide = true;
+    # Keep the Dock visible (don't auto-hide on rebuild).
+    dock.autohide = false;
     dock.mru-spaces = false;
     dock.orientation = "bottom";
     dock.show-recents = false;
