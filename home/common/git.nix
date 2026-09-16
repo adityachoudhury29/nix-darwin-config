@@ -22,16 +22,20 @@
       core.editor = "code --wait";
       core.hooksPath = "/etc/git-guardian/hooks"; # gitleaks pre-push hook (company requirement)
       merge.tool = "nvimdiff";
-
-      # Work repos (Bitbucket / @juspay.in) can override the personal identity
-      # via a per-repo git config. For example, inside a work checkout:
-      #   git config user.name "Aditya"
-      #   git config user.email "aditya.c.001@juspay.in"
-      # Or point git at a dedicated work gitconfig (see `includes` below).
     };
 
-    # Add an unconditional include for a work gitconfig, if you create one:
-    # includes = [ { path = "~/work.gitconfig"; } ];
+    # Work repos under ~/Desktop (Juspay Bitbucket) use the work identity.
+    includes = [
+      {
+        condition = "gitdir:~/Desktop/";
+        contents = {
+          user = {
+            name = "Aditya Choudhury";
+            email = "aditya.c.001@juspay.in";
+          };
+        };
+      }
+    ];
 
     ignores = [
       ".DS_Store"
