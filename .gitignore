@@ -1,1 +1,18 @@
+# nix-darwin / nix artifacts
 result
+result-*
+/nix/
+
+# macOS
+.DS_Store
+*.swp
+*.swo
+*~
+._*
+
+# Nix direnv caches
+.direnv/
+
+# Home Manager backup files
+*.backup
+*.bak

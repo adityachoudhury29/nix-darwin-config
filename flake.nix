@@ -1,15 +1,19 @@
 {
-  description = "macOS system flake";
+  description = "Aditya's macOS system flake (nix-darwin + home-manager)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    
+
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    # Manages Homebrew itself so casks not in nixpkgs can still be installed
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -17,95 +21,55 @@
     };
   };
 
-  outputs = { self, darwin, nixpkgs, nix-homebrew, home-manager, ... }:
+  outputs =
+    {
+      self,
+      darwin,
+      nixpkgs,
+      nix-homebrew,
+      home-manager,
+      ...
+    }@inputs:
     let
       user = "aditya.c.001";
       system = "aarch64-darwin";
-    in {
-    darwinConfigurations."macbook" = darwin.lib.darwinSystem {
-      inherit system;
-      modules = [
-        ({ pkgs, ... }: {
-          environment.systemPackages = with pkgs; [
-            git
-            neovim
-            ghc
-            cabal-install
-            stack
-            haskell-language-server
-          ];
+    in
+    {
+      darwinConfigurations."macbook" = darwin.lib.darwinSystem {
+        inherit system;
 
-          # Explicitly define the user and home directory
-          users.users.${user} = {
-            name = "${user}";
-            home = "/Users/${user}";
-          };
+        # `inputs` is passed so home-manager modules can reference other inputs if needed.
+        specialArgs = {
+          inherit self user system inputs;
+        };
 
-          programs.zsh.enable = true;
-          nix.enable = false;
-	  # Allow your user to use extra substituters/binary caches
-          nix.settings.trusted-users = [ "root" "aditya.c.001" ];
+        modules = [
+          ./hosts/macbook
 
-          system.stateVersion = 4;
-          system.primaryUser = "${user}";
-          
-          homebrew = {
-            enable = true;
-            onActivation.cleanup = "zap";
-            casks = [
-              "google-chrome"
-              "visual-studio-code"
-            ];
-          };
-        })
-
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            enable = true;
-            autoMigrate = true;
-            user = "${user}";
-          };
-        }
-
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.users.${user} = { pkgs, ... }: {
-            home.stateVersion = "24.05";
-            
-            # Zsh plugins and aliases
-            programs.zsh = {
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
               enable = true;
-              enableCompletion = true;
-              autosuggestion.enable = true;
-              syntaxHighlighting.enable = true;
-              shellAliases = {
-                ll = "ls -l";
-                rebuild = "sudo darwin-rebuild switch --flake ~/.nix-config#macbook";
-
-                # Haskell Language Server shortcuts
-                hls = "haskell-language-server-wrapper";
-                haskell-language-server = "haskell-language-server-wrapper";
-              };
+              # Migrate the existing brew installation under nix-homebrew's control
+              autoMigrate = true;
+              user = "${user}";
             };
+          }
 
-            # Terminal Theme
-            programs.starship = {
-              enable = true;
-              enableZshIntegration = true;
+          home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              # Use the same nixpkgs (with allowUnfree) as the system
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              # Preserve any dotfile Nix is about to replace
+              backupFileExtension = "backup";
+              # Pass inputs to home-manager modules (if any module needs them)
+              extraSpecialArgs = { inherit inputs; };
+              users.${user} = import ./home/users/${user};
             };
-
-            # Auto-loads developer environments per folder
-            programs.direnv = {
-              enable = true;
-              enableZshIntegration = true;
-              nix-direnv.enable = true;
-            };
-          };
-        }
-      ];
+          }
+        ];
+      };
     };
-  };
 }
