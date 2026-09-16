@@ -11,9 +11,12 @@
     enable = true;
 
     settings = {
+      # Systemwide identity: Juspay work email. Auth to GitHub is via the
+      # keychain PAT, separate from commit identity — pushes to the personal
+      # adityachoudhury29 repos still work.
       user = {
         name = "Aditya Choudhury";
-        email = "achoudhury2004@gmail.com"; # GitHub account that owns this repo
+        email = "aditya.c.001@juspay.in";
       };
 
       init.defaultBranch = "main";
@@ -23,19 +26,6 @@
       core.hooksPath = "/etc/git-guardian/hooks"; # gitleaks pre-push hook (company requirement)
       merge.tool = "nvimdiff";
     };
-
-    # Work repos under ~/Desktop (Juspay Bitbucket) use the work identity.
-    includes = [
-      {
-        condition = "gitdir:~/Desktop/";
-        contents = {
-          user = {
-            name = "Aditya Choudhury";
-            email = "aditya.c.001@juspay.in";
-          };
-        };
-      }
-    ];
 
     ignores = [
       ".DS_Store"
