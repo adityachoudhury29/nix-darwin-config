@@ -25,6 +25,10 @@
     stack
     haskell-language-server
 
+    # --- Nix tooling ---
+    nil               # Nix language server (LSP) for editors
+    nixfmt-rfc-style  # official RFC-style Nix formatter
+
     # --- Misc ---
     jq
     starship
