@@ -13,6 +13,7 @@
     ./gui-apps.nix
     ./homebrew.nix
     ./system-defaults.nix
+    ./admin.nix
     ../../modules/common
   ];
 
