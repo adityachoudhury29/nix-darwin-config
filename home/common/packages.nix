@@ -23,7 +23,12 @@
     ghc
     cabal-install
     stack
-    haskell-language-server
+
+    # NOTE (2026-09): `haskell-language-server` is intentionally NOT installed
+    # globally. A global HLS build (from this flake's nixpkgs) has a DIFFERENT
+    # `ghc-9.6.7` than our Haskell projects' flakes, so it fails at startup with
+    # "GHC ABIs don't match!". HLS must come from the SAME GHC package set as the
+    # project — see `log-processor/devshell.nix` (adds HLS to the devshell).
 
     # --- Nix tooling ---
     nil               # Nix language server (LSP) for editors
